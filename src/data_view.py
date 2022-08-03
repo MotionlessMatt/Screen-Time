@@ -6,9 +6,6 @@ from datetime import datetime
 db = sqlite3.connect("data.db")
 cur = db.cursor()
 import matplotlib.pyplot as plt
-import cufflinks as cf
-
-cf.set_config_file(theme='pearl')
 
 # WHERE start BETWEEN '{datetime.now().date()} 00:00:00.00' AND '{datetime.now().date()} 24:00:00'"
 entries = cur.execute(f"SELECT * FROM screentime").fetchall()
