@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-
-"""Find the currently active window."""
-
 from datetime import datetime
 import logging
 import os
