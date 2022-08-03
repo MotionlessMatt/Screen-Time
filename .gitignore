@@ -1,3 +1,6 @@
 /bin
 /screentime-env
 .DS_Store
+
+# Database
+data.db
