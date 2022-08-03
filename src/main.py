@@ -73,8 +73,10 @@ def get_active_window():
         except:
             active_proc_name = ""
         active_window_name = win32gui.GetWindowText(window)
+        # Windows usually have format of "App View - App name"... This gets the app name.
         active_window_name = active_window_name.split(" — ")[-1]
         active_window_name = active_window_name.split(" - ")[-1]
+        # Try to make the name prettier, and account for special circumstances.
         if active_proc_name == "explorer" and active_window_name != "":
             active_window_name = "File Explorer"
         if active_proc_name.lower() in active_window_name.lower():
@@ -91,12 +93,15 @@ def get_active_window():
             active_window_name = " ".join(re.sub(r"([A-Z])", r" \1", active_proc_name).split())
     elif sys.platform in ['Mac', 'darwin', 'os2', 'os2emx']:
         from AppKit import NSWorkspace, NSDate, NSRunLoop, NSDefaultRunLoopMode
+        # Obtain current loop
         rl = NSRunLoop.currentRunLoop()
         active_window = NSWorkspace.sharedWorkspace().frontmostApplication()
         window_bundle_url = str(active_window.bundleURL().absoluteString())
         active_window_name = window_bundle_url.split(".app")[0].split("/")[-1].replace("%20", " ")
+        # Refresh the loop to pull the active app
         date = NSDate.date()
         rl.acceptInputForMode_beforeDate_(NSDefaultRunLoopMode, date)
+        #Ignore non-apps
         if active_window_name in ["Finder", "loginwindow"]:
             active_window_name = None
     else:
@@ -132,6 +137,7 @@ while True:
             data.append([active_window, start_date, end_date, seconds_elapsed])
         break
 
+    # Update displayed data on new entry
     if len(data) != data_size:
         session_df = pd.DataFrame(data, columns=["App", "Start", "End", "Total Seconds"])
         purge = "cls" if sys.platform in ['Windows', 'win32', 'cygwin'] else "clear"
@@ -140,4 +146,5 @@ while True:
 
     db.commit()
 
-session_df = pd.DataFrame(data, columns=["App", "Start", "End", "Total Seconds"])
+# Make sure all data is saved.
+db.commit()
