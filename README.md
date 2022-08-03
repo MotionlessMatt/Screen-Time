@@ -30,6 +30,16 @@ The `data_view.py` file allows a user to visualize data into a chart via plotly.
 
 ![chart](docs/chart.png)
 
+## To-do
+If I ever get around to it, here is what I plan on adding to Screen Time in order to make it more seamless for the user:
+- Convert current form into a one file application the monitors and displays activity (Possible candidates include Tkinter or PyQt5)
+    - App will have a chart and table displaying screen time.
+    - Will show most used apps of all time.
+- Add trends to the app, that way you can see where most of your time goes
+- fix any bugs or issues.
+- Add useful features such as: Average Screen Time
+- Nicer charts to make app visually appealing
+
 ---
 ## Credits
 - [SO: Obtain Active Window using Python](https://stackoverflow.com/questions/10266281/obtain-active-window-using-python)
