@@ -4,6 +4,7 @@
 
 import logging
 import sys
+from time import sleep
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
                     level=logging.DEBUG,
@@ -56,6 +57,7 @@ def get_active_window():
         import win32gui
         window = win32gui.GetForegroundWindow()
         active_window_name = win32gui.GetWindowText(window)
+        active_window_name = active_window_name.split(" - ")[-1]
     elif sys.platform in ['Mac', 'darwin', 'os2', 'os2emx']:
         # https://stackoverflow.com/a/373310/562769
         from AppKit import NSWorkspace
@@ -66,6 +68,5 @@ def get_active_window():
               .format(platform=sys.platform))
         print(sys.version)
     return active_window_name
-
 
 print("Active window: %s" % str(get_active_window()))
