@@ -3,6 +3,7 @@
 """Find the currently active window."""
 
 import logging
+import re
 import sys
 
 from time import sleep
@@ -52,10 +53,33 @@ def get_active_window():
                 with open("/proc/{pid}/cmdline".format(pid=pid)) as f:
                     active_window_name = f.read()
     elif sys.platform in ['Windows', 'win32', 'cygwin']:
-        import win32gui
+        import win32gui, win32process, win32api, win32con
+        import psutil
         window = win32gui.GetForegroundWindow()
+        pid = win32process.GetWindowThreadProcessId(window)
+        try:
+            handle = win32api.OpenProcess(win32con.PROCESS_QUERY_INFORMATION | win32con.PROCESS_VM_READ, False, pid[1])
+            proc_name = win32process.GetModuleFileNameEx(handle, 0)
+            active_proc_name = proc_name.split(".exe")[0].split("\\")[-1]
+        except:
+            active_proc_name = ""
         active_window_name = win32gui.GetWindowText(window)
+        active_window_name = active_window_name.split(" — ")[-1]
         active_window_name = active_window_name.split(" - ")[-1]
+        if active_proc_name == "explorer" and active_window_name != "":
+            active_window_name = "File Explorer"
+        if active_proc_name.lower() in active_window_name.lower():
+            active_window_name = active_window_name
+        elif active_proc_name == "javaw":
+            pass
+        elif active_proc_name == "ApplicationFrameHost":
+            pass
+        elif active_window_name == "" or active_proc_name.endswith("Host"):
+            active_window_name = None
+        elif active_window_name.lower().replace(" ", "") in active_proc_name.lower().replace(" ", ""):
+            pass
+        else:
+            active_window_name = " ".join(re.sub(r"([A-Z])", r" \1", active_proc_name).split())
     elif sys.platform in ['Mac', 'darwin', 'os2', 'os2emx']:
         from AppKit import NSWorkspace, NSDate, NSRunLoop, NSDefaultRunLoopMode
         rl = NSRunLoop.currentRunLoop()
