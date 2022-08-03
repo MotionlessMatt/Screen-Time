@@ -141,5 +141,3 @@ while True:
     db.commit()
 
 session_df = pd.DataFrame(data, columns=["App", "Start", "End", "Total Seconds"])
-session_df.to_csv("data.csv")
-session_df.to_json("data.json")
