@@ -4,6 +4,7 @@
 
 import logging
 import sys
+
 from time import sleep
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
@@ -20,10 +21,8 @@ def get_active_window():
     string :
         Name of the currently active window.
     """
-    import sys
     active_window_name = None
     if sys.platform in ['linux', 'linux2']:
-        # Alternatives: https://unix.stackexchange.com/q/38867/4784
         try:
             import wnck
         except ImportError:
@@ -53,20 +52,23 @@ def get_active_window():
                 with open("/proc/{pid}/cmdline".format(pid=pid)) as f:
                     active_window_name = f.read()
     elif sys.platform in ['Windows', 'win32', 'cygwin']:
-        # https://stackoverflow.com/a/608814/562769
         import win32gui
         window = win32gui.GetForegroundWindow()
         active_window_name = win32gui.GetWindowText(window)
         active_window_name = active_window_name.split(" - ")[-1]
     elif sys.platform in ['Mac', 'darwin', 'os2', 'os2emx']:
-        # https://stackoverflow.com/a/373310/562769
-        from AppKit import NSWorkspace
-        active_window_name = (NSWorkspace.sharedWorkspace()
-                              .activeApplication()['NSApplicationName'])
+        from AppKit import NSWorkspace, NSDate, NSRunLoop, NSDefaultRunLoopMode
+        rl = NSRunLoop.currentRunLoop()
+        active_window = NSWorkspace.sharedWorkspace().frontmostApplication()
+        window_bundle_url = str(active_window.bundleURL().absoluteString())
+        active_window_name = window_bundle_url.split(".app")[0].split("/")[-1].replace("%20", " ")
+        date = NSDate.date()
+        rl.acceptInputForMode_beforeDate_(NSDefaultRunLoopMode, date)
     else:
-        print("sys.platform={platform} is unknown. Please report."
-              .format(platform=sys.platform))
+        print(f"{sys.platform=} is unknown. Please report.")
         print(sys.version)
     return active_window_name
 
-print("Active window: %s" % str(get_active_window()))
+while True:
+    print("Active window: %s" % str(get_active_window()))
+    sleep(1)
