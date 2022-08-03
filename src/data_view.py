@@ -1,39 +1,36 @@
-from random import choice, random
 import sqlite3
-import pandas as pd
 from datetime import datetime
 
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Connect to local database file
 db = sqlite3.connect("data.db")
 cur = db.cursor()
-import matplotlib.pyplot as plt
 
-# WHERE start BETWEEN '{datetime.now().date()} 00:00:00.00' AND '{datetime.now().date()} 24:00:00'"
+# Obtain a list of all entries
 entries = cur.execute(f"SELECT * FROM screentime").fetchall()
 
-data = {}
-for i in entries:
-    if i[0] in data:
-        data[i[0]] += i[3]/60
-    else:
-        data.update({i[0]: i[3]/60})
-
+# Create a modified version of entries without time.
 data_points = []
 for i in entries:
     i = list(i)
     i[1] = datetime.fromisoformat(i[1]).date()
-    i[3] = i[3]/60
+    i[3] = i[3]/60 # Convert to minutes instead of seconds
     data_points.append(i)
-df = pd.DataFrame(data_points, columns=["App", "Start Date", "End Date", "Total Seconds"])
-agg_tips = df.groupby(['Start Date', 'App'])['Total Seconds'].sum().sort_values(ascending=False).unstack().fillna(0)
-agg_tips.sort_values([i for i in data])
 
-print(agg_tips.to_string())
+# Create DataFrame and modify it for visualization of time spent per app per day
+df = pd.DataFrame(data_points, columns=["App", "Start Date", "End Date", "Total Minutes"])
+screentime_chart = df.groupby(['Start Date', 'App'])['Total Minutes'].sum().sort_values(ascending=False).unstack().fillna(0)
+screentime_chart.plot(kind='bar', stacked=True, width=0.6)
 
-# Very simple one-liner using our agg_tips DataFrame.
-agg_tips.plot(kind='bar', stacked=True)
-
-# Just add a title and rotate the x-axis labels to be horizontal.
+# Matplotlib chart
 plt.title('Screen Time by Day')
-plt.xticks(rotation=0, ha='center')
+plt.xticks(rotation=0)
+plt.ylabel("Minutes")
+# Uncomment to show chart: plt.show()
 
-plt.show()
+# Plotly chart (This is the preferred chart for pure visualization.)
+pd.options.plotting.backend = "plotly"
+plotly_chart = screentime_chart.plot.bar(title="Screen Time by Day", labels={"value": "Time Elapsed (minutes)"})
+plotly_chart.show()
